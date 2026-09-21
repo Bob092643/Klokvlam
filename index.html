@@ -1,0 +1,768 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#ff7a00">
+  <meta name="description" content="KlokVlam helpt kinderen van 6 tot 9 jaar spelenderwijs klokkijken.">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml">
+  <title>KlokVlam</title>
+  <style>
+    :root{
+      --bg:#fff8ee;
+      --panel:#fff;
+      --text:#30251d;
+      --muted:#796c61;
+      --accent:#ff7a00;
+      --accent-dark:#d45b00;
+      --accent-soft:#fff0da;
+      --yellow:#ffd449;
+      --red:#ef4b21;
+      --good:#2e9a4b;
+      --line:#eadcca;
+      --shadow:0 12px 30px rgba(91,54,18,.10);
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    button{font:inherit;cursor:pointer}
+    button:disabled{cursor:default}
+    .app{max-width:760px;margin:0 auto;padding:16px 16px 38px}
+    .screen{display:none}.screen.active{display:block}
+    .topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px}
+    .brand{display:flex;align-items:center;gap:8px;font-weight:950}
+    .coin-pill{display:flex;align-items:center;gap:7px;background:#fff;border:1px solid var(--line);border-radius:999px;padding:8px 12px;font-weight:900;box-shadow:0 4px 12px rgba(0,0,0,.04)}
+    .hero{text-align:center;padding:5px 0 14px}
+    h1,h2,h3,p{margin-top:0}
+    h1{margin-bottom:5px;font-size:clamp(1.8rem,6vw,2.55rem)}
+    h2{font-size:clamp(1.35rem,5vw,2rem)}
+    .muted{color:var(--muted)} .small{font-size:.9rem;color:var(--muted)}
+    .vlam-stage{display:grid;place-items:center;margin:4px auto 6px;min-height:130px}
+    .vlammetje{position:relative;width:108px;height:126px;filter:drop-shadow(0 9px 10px rgba(212,91,0,.16))}
+    .vlam-body{position:absolute;left:12px;top:0;width:84px;height:106px;background:linear-gradient(165deg,#ffb51d 6%,#ff7a00 44%,#ef4b21 92%);clip-path:polygon(50% 0%,62% 20%,79% 12%,75% 34%,93% 46%,88% 69%,74% 90%,52% 100%,28% 94%,10% 77%,6% 55%,23% 34%,30% 12%,43% 27%);border-radius:50%}
+    .vlam-inner{position:absolute;left:32px;top:45px;width:45px;height:51px;background:var(--yellow);clip-path:polygon(50% 0%,67% 25%,86% 45%,84% 70%,66% 93%,43% 100%,22% 86%,11% 63%,20% 39%);border-radius:50%}
+    .vlam-eye{position:absolute;top:58px;width:8px;height:11px;background:#2e241e;border-radius:50%;z-index:3}
+    .vlam-eye.left{left:39px}.vlam-eye.right{right:39px}
+    .vlam-cheek{position:absolute;top:72px;width:9px;height:5px;background:rgba(239,75,33,.35);border-radius:50%;z-index:3}
+    .vlam-cheek.left{left:31px}.vlam-cheek.right{right:31px}
+    .vlam-mouth{position:absolute;left:45px;top:73px;width:18px;height:10px;border-bottom:3px solid #2e241e;border-radius:0 0 16px 16px;z-index:3}
+    .arm,.leg{position:absolute;background:#ef6b15;border-radius:999px;z-index:-1}
+    .arm{width:36px;height:8px;top:69px}.arm.left{left:0;transform:rotate(-28deg)}.arm.right{right:0;transform:rotate(28deg)}
+    .leg{width:9px;height:28px;top:98px}.leg.left{left:34px;transform:rotate(10deg)}.leg.right{right:34px;transform:rotate(-10deg)}
+    .foot{position:absolute;top:119px;width:22px;height:9px;background:#ef6b15;border-radius:999px}.foot.left{left:23px;transform:rotate(-8deg)}.foot.right{right:23px;transform:rotate(8deg)}
+    .vlammetje.happy .vlam-mouth{height:13px;border:0;background:#2e241e;border-radius:5px 5px 14px 14px}
+    .vlammetje.think .vlam-mouth{width:11px;height:5px;left:49px;border:0;border-top:3px solid #2e241e;border-radius:50%}
+    .speech{max-width:540px;margin:4px auto 14px;background:white;border:2px solid #ffd29d;border-radius:20px;padding:13px 15px;text-align:center;font-weight:900;position:relative;box-shadow:0 5px 16px rgba(91,54,18,.05)}
+    .speech:after{content:"";position:absolute;left:50%;bottom:-10px;transform:translateX(-50%) rotate(45deg);width:16px;height:16px;background:white;border-right:2px solid #ffd29d;border-bottom:2px solid #ffd29d}
+    .speech-row{display:flex;justify-content:center;align-items:center;gap:9px}
+    .grid{display:grid;gap:13px}
+    .choice{width:100%;display:flex;align-items:center;gap:14px;text-align:left;background:#fff;border:1px solid var(--line);border-radius:21px;padding:15px;box-shadow:var(--shadow)}
+    .choice:active:not(:disabled){transform:scale(.995)} .choice.locked{opacity:.62}
+    .choice-icon{flex:0 0 60px;width:60px;height:60px;border-radius:17px;background:var(--accent-soft);display:grid;place-items:center;font-size:27px;font-weight:950}
+    .choice-main{flex:1}.choice-title{font-weight:950;font-size:1.08rem}.choice-desc{color:var(--muted);margin-top:3px;font-size:.94rem}
+    .row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+    .icon-btn{width:48px;height:48px;border-radius:14px;border:1px solid var(--line);background:#fff;font-size:21px;display:grid;place-items:center}
+    .exercise-title{text-align:center;color:var(--muted);font-size:.9rem}
+    .clock-wrap{max-width:490px;margin:0 auto}
+    .clock{position:relative;width:100%;aspect-ratio:1;background:#fff;border:8px solid #332a24;border-radius:50%;box-shadow:inset 0 0 0 6px #f7ede0,var(--shadow);touch-action:none;user-select:none}
+    .clock.example{border-width:6px;box-shadow:inset 0 0 0 4px #ffeed6}
+    .num{position:absolute;transform:translate(-50%,-50%);font-weight:950;font-size:clamp(1rem,4vw,1.55rem)}
+    .hand{position:absolute;left:50%;bottom:50%;transform-origin:50% 100%;border-radius:999px;pointer-events:none}
+    .minute{width:7px;height:38%;margin-left:-3.5px;background:#302a25}
+    .hour{width:12px;height:29%;margin-left:-6px;background:var(--accent);transition:transform .09s ease}
+    .pin{position:absolute;left:50%;top:50%;width:24px;height:24px;margin:-12px;border-radius:50%;background:#302a25;pointer-events:none}
+    .grab{position:absolute;left:50%;top:35%;width:36px;height:36px;transform:translate(-50%,-50%);border:3px dashed #ffb864;border-radius:50%;pointer-events:none}
+    .feedback{text-align:center;min-height:34px;margin-top:11px;font-size:1.1rem;font-weight:950}
+    .feedback.good{color:var(--good)}
+    .progress-wrap{max-width:500px;margin:13px auto 2px}
+    .progress-label{display:flex;justify-content:space-between;color:var(--muted);font-size:.88rem;margin-bottom:6px}
+    .progress{height:10px;background:#efe2d1;border-radius:999px;overflow:hidden}.progress>div{height:100%;background:var(--accent);transition:width .2s}
+    .copy-grid{display:grid;grid-template-columns:1fr;gap:18px;align-items:center}
+    .example-box{text-align:center}.example-clock-wrap{max-width:220px;margin:0 auto}
+    .you-label,.vlam-label{font-weight:900;margin-bottom:7px;color:var(--muted)}
+    .choice-clocks{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:620px;margin:0 auto}
+    .clock-option{border:2px solid transparent;border-radius:18px;background:#fff;padding:7px}
+    .clock-option:hover{border-color:#ffd09a}
+    .clock-option.wrong{animation:shake .22s linear 1}
+    @keyframes shake{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+    .digital-display{font-variant-numeric:tabular-nums;font-weight:950;letter-spacing:.035em;text-align:center;font-size:clamp(2.7rem,12vw,5rem);margin:10px 0 13px}
+    .stepper{display:flex;justify-content:center;gap:16px}.stepper button{width:64px;height:64px;border-radius:18px;border:1px solid var(--line);background:#fff;font-size:31px;font-weight:950}
+    .btn{border:0;border-radius:16px;padding:14px 18px;background:var(--accent);color:white;font-weight:950;box-shadow:0 6px 0 var(--accent-dark)}
+    .btn:active{transform:translateY(3px);box-shadow:0 3px 0 var(--accent-dark)}
+    .btn.secondary{background:white;color:var(--text);border:1px solid var(--line);box-shadow:none}
+    .actions{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:14px}
+    .note{margin-top:15px;padding:12px 14px;border-radius:15px;background:#fff1dc;border:1px solid #efd2aa;color:#6c4b24;font-size:.93rem}
+    .free-pair{display:grid;grid-template-columns:1fr;gap:18px;align-items:center}
+    .free-digital{display:none}.free-digital.unlocked{display:block}
+    .modal{position:fixed;inset:0;background:rgba(46,33,23,.48);display:none;align-items:center;justify-content:center;padding:20px;z-index:20}
+    .modal.show{display:flex}
+    .modal-card{background:#fff;border-radius:24px;max-width:450px;width:100%;padding:23px;text-align:center;box-shadow:0 18px 55px rgba(0,0,0,.20)}
+    .modal-emoji{font-size:50px;margin-bottom:5px}
+    @media(min-width:650px){.grid.two,.copy-grid,.free-pair{grid-template-columns:1fr 1fr}}
+  </style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <div class="brand"><span>🔥</span> KlokVlam</div>
+    <div class="coin-pill" aria-live="polite">🪙 <span id="coinCount">0</span></div>
+  </div>
+
+  <section id="home" class="screen active">
+    <div class="hero">
+      <div id="homeMascot" class="vlam-stage"></div>
+      <h1>Hoi, ik ben Vlammetje!</h1>
+      <p class="muted">Zullen we samen klokkijken?</p>
+    </div>
+    <div class="grid">
+      <button id="startAnalog" class="choice">
+        <div class="choice-icon">🕒</div>
+        <div class="choice-main">
+          <div class="choice-title">Hele uren</div>
+          <div class="choice-desc">Luisteren, draaien, kijken en namaken.</div>
+        </div>
+        <div>▶</div>
+      </button>
+
+      <button id="startDigital" class="choice locked" disabled>
+        <div class="choice-icon" style="font-size:18px">12:00</div>
+        <div class="choice-main">
+          <div class="choice-title">Digitale hele uren</div>
+          <div id="digitalLockText" class="choice-desc">Nog niet vrijgespeeld.</div>
+        </div>
+        <div id="digitalLockIcon">🔒</div>
+      </button>
+
+      <button id="startFree" class="choice">
+        <div class="choice-icon">🎮</div>
+        <div class="choice-main">
+          <div class="choice-title">Vrij spelen</div>
+          <div class="choice-desc">Draai zelf en ontdek wat er gebeurt.</div>
+        </div>
+        <div>▶</div>
+      </button>
+
+      <div class="choice locked" aria-disabled="true">
+        <div class="choice-icon">🕞</div>
+        <div class="choice-main">
+          <div class="choice-title">Halve uren</div>
+          <div class="choice-desc">De volgende leerstap.</div>
+        </div>
+        <div>🔒</div>
+      </div>
+    </div>
+    <div class="note">Digitale hele uren worden pas vrijgespeeld als het kind minimaal 20 muntjes heeft, twee analoge rondes heeft afgerond en minimaal 7 van de laatste 10 analoge opdrachten direct goed heeft.</div>
+  </section>
+
+  <section id="analog" class="screen">
+    <div class="row">
+      <button class="icon-btn homeBtn" aria-label="Terug naar begin">⌂</button>
+      <div id="analogType" class="exercise-title">Hele uren</div>
+      <div style="width:48px"></div>
+    </div>
+
+    <div id="exerciseMascot" class="vlam-stage"></div>
+
+    <div class="speech">
+      <div class="speech-row">
+        <span id="instructionText">Kun jij drie uur maken?</span>
+        <button id="repeatSpeech" class="icon-btn" aria-label="Luister opnieuw">🔊</button>
+      </div>
+    </div>
+
+    <div id="setTimeArea">
+      <div class="clock-wrap">
+        <div id="mainClock" class="clock" aria-label="Interactieve analoge klok"></div>
+      </div>
+    </div>
+
+    <div id="copyArea" style="display:none">
+      <div class="copy-grid">
+        <div class="example-box">
+          <div class="vlam-label">Vlammetjes klok</div>
+          <div class="example-clock-wrap"><div id="exampleClock" class="clock example"></div></div>
+        </div>
+        <div>
+          <div class="you-label" style="text-align:center">Jouw klok</div>
+          <div class="clock-wrap"><div id="copyClock" class="clock"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="chooseArea" style="display:none">
+      <div id="choiceClocks" class="choice-clocks"></div>
+    </div>
+
+    <div id="analogFeedback" class="feedback" aria-live="assertive"></div>
+
+    <div class="progress-wrap">
+      <div class="progress-label"><span>Deze ronde</span><span id="analogCounter">1 / 10</span></div>
+      <div class="progress"><div id="analogProgress" style="width:0%"></div></div>
+    </div>
+  </section>
+
+  <section id="digital" class="screen">
+    <div class="row">
+      <button class="icon-btn homeBtn" aria-label="Terug naar begin">⌂</button>
+      <div class="exercise-title">Digitale hele uren</div>
+      <div style="width:48px"></div>
+    </div>
+
+    <div id="digitalMascot" class="vlam-stage"></div>
+
+    <div class="speech">
+      <div class="speech-row">
+        <span id="digitalInstruction">Kun jij zes uur maken?</span>
+        <button id="repeatDigital" class="icon-btn" aria-label="Luister opnieuw">🔊</button>
+      </div>
+    </div>
+
+    <div id="digitalDisplay" class="digital-display">06:00</div>
+    <div class="stepper">
+      <button id="digitalMinus" aria-label="Een uur terug">−</button>
+      <button id="digitalPlus" aria-label="Een uur vooruit">+</button>
+    </div>
+    <div class="actions"><button id="checkDigital" class="btn">Klaar</button></div>
+
+    <div id="digitalFeedback" class="feedback" aria-live="assertive"></div>
+
+    <div class="progress-wrap">
+      <div class="progress-label"><span>Deze ronde</span><span id="digitalCounter">1 / 10</span></div>
+      <div class="progress"><div id="digitalProgress" style="width:0%"></div></div>
+    </div>
+  </section>
+
+  <section id="free" class="screen">
+    <div class="row">
+      <button class="icon-btn homeBtn" aria-label="Terug naar begin">⌂</button>
+      <div class="exercise-title">Vrij spelen</div>
+      <div style="width:48px"></div>
+    </div>
+
+    <div id="freeMascot" class="vlam-stage"></div>
+    <div class="speech"><span>Draai maar aan de kleine wijzer!</span></div>
+
+    <div class="free-pair">
+      <div class="clock-wrap"><div id="freeClock" class="clock"></div></div>
+      <div id="freeDigitalBlock" class="free-digital">
+        <div id="freeDigital" class="digital-display">03:00</div>
+        <div class="stepper">
+          <button id="freeMinus" aria-label="Een uur terug">−</button>
+          <button id="freePlus" aria-label="Een uur vooruit">+</button>
+        </div>
+      </div>
+    </div>
+    <p id="freeHint" class="muted" style="text-align:center;margin-top:16px"></p>
+  </section>
+</div>
+
+<div id="roundModal" class="modal">
+  <div class="modal-card">
+    <div class="modal-emoji">🔥</div>
+    <h2>Goed gedaan!</h2>
+    <p>Je hebt de ronde afgemaakt en krijgt <strong>2 bonusmuntjes</strong>.</p>
+    <div class="actions">
+      <button id="againBtn" class="btn">Nog een keer</button>
+      <button id="homeBtnModal" class="btn secondary">Naar begin</button>
+    </div>
+  </div>
+</div>
+
+<div id="unlockModal" class="modal">
+  <div class="modal-card">
+    <div class="modal-emoji">🔓</div>
+    <h2>Digitale klok vrijgespeeld!</h2>
+    <p>Vlammetje heeft een nieuwe manier van oefenen voor je.</p>
+    <div class="digital-display">08:00</div>
+    <div class="actions">
+      <button id="tryDigitalBtn" class="btn">Proberen</button>
+      <button id="laterBtn" class="btn secondary">Later</button>
+    </div>
+  </div>
+</div>
+
+<script src="./config.js"></script>
+<script>
+(() => {
+  const CONFIG = window.KLOKVLAM_CONFIG;
+  const STORAGE_KEY = CONFIG.storage.progressKey;
+  const ROUND_SIZE = CONFIG.learning.roundSize;
+  const REQUIRED_COINS = CONFIG.learning.unlockDigital.requiredCoins;
+  const REQUIRED_ROUNDS = CONFIG.learning.unlockDigital.requiredAnalogRounds;
+  const REQUIRED_CORRECT_LAST10 = CONFIG.learning.unlockDigital.requiredCorrect;
+
+  const names = {
+    1:"één uur",2:"twee uur",3:"drie uur",4:"vier uur",5:"vijf uur",6:"zes uur",
+    7:"zeven uur",8:"acht uur",9:"negen uur",10:"tien uur",11:"elf uur",12:"twaalf uur"
+  };
+
+  const defaultProgress = {
+    coins:0,
+    analogRounds:0,
+    recentAnalog:[],
+    digitalUnlocked:false,
+    unlockShown:false
+  };
+
+  let progress = loadProgress();
+  let analog = resetRound();
+  let digital = resetRound();
+  let freeHour = 3;
+  let currentMode = "set";
+
+  function mascot(state="normal"){
+    return `
+      <div class="vlammetje ${state}">
+        <div class="vlam-body"></div>
+        <div class="vlam-inner"></div>
+        <div class="vlam-eye left"></div><div class="vlam-eye right"></div>
+        <div class="vlam-cheek left"></div><div class="vlam-cheek right"></div>
+        <div class="vlam-mouth"></div>
+        <div class="arm left"></div><div class="arm right"></div>
+        <div class="leg left"></div><div class="leg right"></div>
+        <div class="foot left"></div><div class="foot right"></div>
+      </div>`;
+  }
+
+  ["homeMascot","exerciseMascot","digitalMascot","freeMascot"].forEach(id => {
+    document.getElementById(id).innerHTML = mascot();
+  });
+
+  function loadProgress(){
+    try{
+      const raw = localStorage.getItem(STORAGE_KEY);
+      return raw ? {...defaultProgress, ...JSON.parse(raw)} : {...defaultProgress};
+    }catch{
+      return {...defaultProgress};
+    }
+  }
+
+  function saveProgress(){
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
+    updateUI();
+  }
+
+  function resetRound(){
+    return {
+      index:0,
+      target:3,
+      selected:8,
+      firstAttempt:true,
+      resolved:false,
+      lastTarget:null
+    };
+  }
+
+  function normalizedHour(h){ return ((h-1)%12+12)%12+1; }
+
+  function randomHour(exclude=[]){
+    const blocked = new Set(exclude);
+    const opts = Array.from({length:12},(_,i)=>i+1).filter(h=>!blocked.has(h));
+    return opts[Math.floor(Math.random()*opts.length)];
+  }
+
+  function speak(text){
+    if(!("speechSynthesis" in window)) return;
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = CONFIG.locale;
+    u.rate = CONFIG.speech.rate;
+    u.pitch = CONFIG.speech.pitch;
+    const voice = speechSynthesis.getVoices().find(v=>v.lang.toLowerCase().startsWith("nl"));
+    if(voice) u.voice = voice;
+    speechSynthesis.speak(u);
+  }
+
+  function showScreen(id){
+    document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
+    document.getElementById(id).classList.add("active");
+    scrollTo({top:0,behavior:"smooth"});
+  }
+
+  function updateUI(){
+    document.getElementById("coinCount").textContent = progress.coins;
+    const btn = document.getElementById("startDigital");
+    const desc = document.getElementById("digitalLockText");
+    const icon = document.getElementById("digitalLockIcon");
+
+    if(progress.digitalUnlocked){
+      btn.disabled = false;
+      btn.classList.remove("locked");
+      desc.textContent = "Oefen dezelfde hele uren met cijfers.";
+      icon.textContent = "▶";
+    }else{
+      btn.disabled = true;
+      btn.classList.add("locked");
+
+      const sample = progress.recentAnalog.slice(-10);
+      const correct = sample.filter(Boolean).length;
+      const missing = [];
+      if(progress.coins < REQUIRED_COINS) missing.push(`${REQUIRED_COINS-progress.coins} muntjes`);
+      if(progress.analogRounds < REQUIRED_ROUNDS) missing.push(`${REQUIRED_ROUNDS-progress.analogRounds} ronde${REQUIRED_ROUNDS-progress.analogRounds===1?"":"s"}`);
+      if(sample.length < 10) missing.push(`${10-sample.length} oefenresultaten`);
+      else if(correct < REQUIRED_CORRECT_LAST10) missing.push(`${REQUIRED_CORRECT_LAST10-correct} extra direct goed`);
+      desc.textContent = missing.length ? `Nog nodig: ${missing.join(", ")}` : "Bijna vrijgespeeld";
+      icon.textContent = "🔒";
+    }
+
+    document.getElementById("freeDigitalBlock").classList.toggle("unlocked", progress.digitalUnlocked);
+    document.getElementById("freeHint").textContent = progress.digitalUnlocked
+      ? "Draai aan de analoge klok of gebruik de digitale knoppen. Beide veranderen samen."
+      : "De digitale klok verschijnt hier zodra je die hebt vrijgespeeld.";
+  }
+
+  function evaluateUnlock(){
+    if(progress.digitalUnlocked) return false;
+    const sample = progress.recentAnalog.slice(-10);
+    if(
+      progress.coins >= REQUIRED_COINS &&
+      progress.analogRounds >= REQUIRED_ROUNDS &&
+      sample.length === 10 &&
+      sample.filter(Boolean).length >= REQUIRED_CORRECT_LAST10
+    ){
+      progress.digitalUnlocked = true;
+      saveProgress();
+      return true;
+    }
+    return false;
+  }
+
+  function createClock(container, getHour, setHour, onRelease, interactive=true){
+    container.innerHTML = `
+      <div class="minute hand"></div>
+      <div class="hour hand"></div>
+      <div class="pin"></div>
+      ${interactive?'<div class="grab"></div>':''}
+    `;
+    for(let h=1;h<=12;h++){
+      const n=document.createElement("div");
+      n.className="num"; n.textContent=h;
+      const a=h*Math.PI/6;
+      n.style.left=(50+Math.sin(a)*39)+"%";
+      n.style.top=(50-Math.cos(a)*39)+"%";
+      container.appendChild(n);
+    }
+    const hourHand=container.querySelector(".hour");
+
+    function render(){
+      const h=normalizedHour(getHour());
+      hourHand.style.transform=`rotate(${(h%12)*30}deg)`;
+    }
+
+    function fromPointer(x,y){
+      const r=container.getBoundingClientRect();
+      let angle=Math.atan2(y-(r.top+r.height/2),x-(r.left+r.width/2))+Math.PI/2;
+      if(angle<0) angle+=Math.PI*2;
+      let raw=Math.round(angle/(Math.PI*2/12));
+      if(raw===0) raw=12;
+      return normalizedHour(raw);
+    }
+
+    if(interactive){
+      let dragging=false;
+      container.addEventListener("pointerdown",e=>{
+        dragging=true;
+        container.setPointerCapture(e.pointerId);
+        setHour(fromPointer(e.clientX,e.clientY));
+        render();
+      });
+      container.addEventListener("pointermove",e=>{
+        if(!dragging) return;
+        setHour(fromPointer(e.clientX,e.clientY));
+        render();
+      });
+      const finish=e=>{
+        if(!dragging) return;
+        dragging=false;
+        try{container.releasePointerCapture(e.pointerId)}catch{}
+        onRelease?.();
+      };
+      container.addEventListener("pointerup",finish);
+      container.addEventListener("pointercancel",finish);
+    }
+    return {render};
+  }
+
+  const mainClock = createClock(
+    document.getElementById("mainClock"),
+    ()=>analog.selected,
+    h=>{ if(!analog.resolved) analog.selected=h; },
+    ()=>checkAnalog()
+  );
+
+  const exampleClock = createClock(
+    document.getElementById("exampleClock"),
+    ()=>analog.target,
+    ()=>{},
+    ()=>{},
+    false
+  );
+
+  const copyClock = createClock(
+    document.getElementById("copyClock"),
+    ()=>analog.selected,
+    h=>{ if(!analog.resolved) analog.selected=h; },
+    ()=>checkAnalog()
+  );
+
+  const freeClock = createClock(
+    document.getElementById("freeClock"),
+    ()=>freeHour,
+    h=>{ freeHour=h; renderFree(); },
+    ()=>speak(names[freeHour])
+  );
+
+  function startAnalogRound(){
+    analog = resetRound();
+    setupAnalogQuestion();
+    showScreen("analog");
+  }
+
+  function modeForIndex(i){
+    const pattern = ["set","set","copy","choose","copy","set","choose","copy","set","choose"];
+    return pattern[i % pattern.length];
+  }
+
+  function setupAnalogQuestion(){
+    analog.resolved=false;
+    analog.firstAttempt=true;
+    analog.target=randomHour([analog.lastTarget]);
+    analog.selected=randomHour([analog.target]);
+    analog.lastTarget=analog.target;
+    currentMode=modeForIndex(analog.index);
+
+    const text=document.getElementById("instructionText");
+    document.getElementById("analogFeedback").textContent="";
+    document.getElementById("analogFeedback").className="feedback";
+    document.getElementById("analogCounter").textContent=`${analog.index+1} / ${ROUND_SIZE}`;
+    document.getElementById("analogProgress").style.width=`${analog.index/ROUND_SIZE*100}%`;
+
+    document.getElementById("setTimeArea").style.display="none";
+    document.getElementById("copyArea").style.display="none";
+    document.getElementById("chooseArea").style.display="none";
+
+    if(currentMode==="set"){
+      document.getElementById("analogType").textContent="Maak de tijd";
+      document.getElementById("setTimeArea").style.display="block";
+      text.textContent=`Kun jij ${names[analog.target]} maken?`;
+      mainClock.render();
+      speak(text.textContent);
+    }
+
+    if(currentMode==="copy"){
+      document.getElementById("analogType").textContent="Maak mijn klok na";
+      document.getElementById("copyArea").style.display="block";
+      text.textContent="Kan je het net zo laat maken als op mijn klok?";
+      exampleClock.render(); copyClock.render();
+      speak(text.textContent);
+    }
+
+    if(currentMode==="choose"){
+      document.getElementById("analogType").textContent="Welke klok is goed?";
+      document.getElementById("chooseArea").style.display="block";
+      text.textContent=`Welke klok staat op ${names[analog.target]}?`;
+      buildChoiceClocks();
+      speak(text.textContent);
+    }
+  }
+
+  function buildChoiceClocks(){
+    const box=document.getElementById("choiceClocks");
+    box.innerHTML="";
+    const wrong1=randomHour([analog.target]);
+    const wrong2=randomHour([analog.target,wrong1]);
+    const values=[analog.target,wrong1,wrong2].sort(()=>Math.random()-.5);
+
+    values.forEach(h=>{
+      const btn=document.createElement("button");
+      btn.className="clock-option";
+      const c=document.createElement("div");
+      c.className="clock example";
+      btn.appendChild(c);
+      box.appendChild(btn);
+
+      createClock(c,()=>h,()=>{},()=>{},false).render();
+
+      btn.addEventListener("click",()=>{
+        if(analog.resolved) return;
+        if(analog.firstAttempt){
+          progress.recentAnalog.push(h===analog.target);
+          if(progress.recentAnalog.length>20) progress.recentAnalog=progress.recentAnalog.slice(-20);
+          analog.firstAttempt=false;
+        }
+        if(h===analog.target){
+          handleAnalogCorrect();
+        }else{
+          btn.classList.remove("wrong");
+          void btn.offsetWidth;
+          btn.classList.add("wrong");
+          handleAnalogWrong();
+        }
+      });
+    });
+  }
+
+  function checkAnalog(){
+    if(analog.resolved) return;
+    if(analog.firstAttempt){
+      progress.recentAnalog.push(analog.selected===analog.target);
+      if(progress.recentAnalog.length>20) progress.recentAnalog=progress.recentAnalog.slice(-20);
+      analog.firstAttempt=false;
+    }
+    analog.selected===analog.target ? handleAnalogCorrect() : handleAnalogWrong();
+  }
+
+  function handleAnalogCorrect(){
+    analog.resolved=true;
+    progress.coins+=CONFIG.rewards.correctAnswerCoins;
+    const f=document.getElementById("analogFeedback");
+    f.textContent=`Yes! ${names[analog.target]}! +1 🪙`;
+    f.className="feedback good";
+    document.getElementById("exerciseMascot").innerHTML=mascot("happy");
+    saveProgress();
+    speak(`Yes! ${names[analog.target]}!`);
+
+    const unlocked=evaluateUnlock();
+    setTimeout(()=>{
+      document.getElementById("exerciseMascot").innerHTML=mascot();
+      if(unlocked && !progress.unlockShown){
+        progress.unlockShown=true; saveProgress();
+        document.getElementById("unlockModal").classList.add("show");
+      }else{
+        nextAnalog();
+      }
+    },850);
+  }
+
+  function handleAnalogWrong(){
+    const f=document.getElementById("analogFeedback");
+    f.textContent="Bijna. Kijk nog eens goed.";
+    f.className="feedback";
+    document.getElementById("exerciseMascot").innerHTML=mascot("think");
+    saveProgress();
+    speak("Bijna. Kijk nog eens goed.");
+    setTimeout(()=>document.getElementById("exerciseMascot").innerHTML=mascot(),700);
+  }
+
+  function nextAnalog(){
+    analog.index++;
+    if(analog.index>=ROUND_SIZE){
+      progress.analogRounds+=1;
+      progress.coins+=CONFIG.rewards.completedRoundBonus;
+      saveProgress();
+      evaluateUnlock();
+      document.getElementById("analogProgress").style.width="100%";
+      document.getElementById("roundModal").classList.add("show");
+      speak("Goed gedaan! Je hebt de ronde afgemaakt.");
+    }else{
+      setupAnalogQuestion();
+    }
+  }
+
+  function startDigitalRound(){
+    if(!progress.digitalUnlocked) return;
+    digital=resetRound();
+    setupDigital();
+    showScreen("digital");
+  }
+
+  function setupDigital(){
+    digital.resolved=false;
+    digital.target=randomHour([digital.lastTarget]);
+    digital.selected=randomHour([digital.target]);
+    digital.lastTarget=digital.target;
+    document.getElementById("digitalInstruction").textContent=`Kun jij ${names[digital.target]} maken?`;
+    document.getElementById("digitalFeedback").textContent="";
+    document.getElementById("digitalCounter").textContent=`${digital.index+1} / ${ROUND_SIZE}`;
+    document.getElementById("digitalProgress").style.width=`${digital.index/ROUND_SIZE*100}%`;
+    renderDigital();
+    speak(document.getElementById("digitalInstruction").textContent);
+  }
+
+  function renderDigital(){
+    document.getElementById("digitalDisplay").textContent=`${String(digital.selected).padStart(2,"0")}:00`;
+  }
+
+  function checkDigital(){
+    if(digital.resolved) return;
+    const f=document.getElementById("digitalFeedback");
+    if(digital.selected===digital.target){
+      digital.resolved=true;
+      progress.coins+=CONFIG.rewards.correctAnswerCoins; saveProgress();
+      f.textContent=`Ja! ${names[digital.target]}! +1 🪙`;
+      f.className="feedback good";
+      document.getElementById("digitalMascot").innerHTML=mascot("happy");
+      speak(`Ja! ${names[digital.target]}!`);
+      setTimeout(()=>{
+        document.getElementById("digitalMascot").innerHTML=mascot();
+        digital.index++;
+        if(digital.index>=ROUND_SIZE){
+          progress.coins+=CONFIG.rewards.completedRoundBonus; saveProgress();
+          document.getElementById("roundModal").classList.add("show");
+        }else setupDigital();
+      },850);
+    }else{
+      f.textContent="Bijna. Probeer het nog eens.";
+      f.className="feedback";
+      speak("Bijna. Probeer het nog eens.");
+    }
+  }
+
+  function renderFree(){
+    freeClock.render();
+    document.getElementById("freeDigital").textContent=`${String(freeHour).padStart(2,"0")}:00`;
+  }
+
+  document.getElementById("startAnalog").addEventListener("click",startAnalogRound);
+  document.getElementById("startDigital").addEventListener("click",startDigitalRound);
+  document.getElementById("startFree").addEventListener("click",()=>{
+    freeHour=3; renderFree(); updateUI(); showScreen("free");
+    speak("Draai maar aan de kleine wijzer.");
+  });
+
+  document.querySelectorAll(".homeBtn").forEach(b=>b.addEventListener("click",()=>{
+    if("speechSynthesis" in window) speechSynthesis.cancel();
+    showScreen("home"); updateUI();
+  }));
+
+  document.getElementById("repeatSpeech").addEventListener("click",()=>{
+    const text=document.getElementById("instructionText").textContent;
+    speak(text);
+  });
+
+  document.getElementById("repeatDigital").addEventListener("click",()=>speak(document.getElementById("digitalInstruction").textContent));
+  document.getElementById("digitalMinus").addEventListener("click",()=>{digital.selected=normalizedHour(digital.selected-1);renderDigital()});
+  document.getElementById("digitalPlus").addEventListener("click",()=>{digital.selected=normalizedHour(digital.selected+1);renderDigital()});
+  document.getElementById("checkDigital").addEventListener("click",checkDigital);
+
+  document.getElementById("freeMinus").addEventListener("click",()=>{freeHour=normalizedHour(freeHour-1);renderFree();speak(names[freeHour])});
+  document.getElementById("freePlus").addEventListener("click",()=>{freeHour=normalizedHour(freeHour+1);renderFree();speak(names[freeHour])});
+
+  document.getElementById("againBtn").addEventListener("click",()=>{
+    document.getElementById("roundModal").classList.remove("show");
+    document.getElementById("digital").classList.contains("active") ? startDigitalRound() : startAnalogRound();
+  });
+
+  document.getElementById("homeBtnModal").addEventListener("click",()=>{
+    document.getElementById("roundModal").classList.remove("show");
+    showScreen("home");updateUI();
+  });
+
+  document.getElementById("tryDigitalBtn").addEventListener("click",()=>{
+    document.getElementById("unlockModal").classList.remove("show");
+    startDigitalRound();
+  });
+
+  document.getElementById("laterBtn").addEventListener("click",()=>{
+    document.getElementById("unlockModal").classList.remove("show");
+    showScreen("home");updateUI();
+  });
+
+  window.addEventListener("beforeunload",()=>{ if("speechSynthesis" in window) speechSynthesis.cancel(); });
+
+  updateUI();
+  renderFree();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,14 @@
+{
+  "name": "klokvlam",
+  "version": "0.2.0",
+  "private": true,
+  "description": "KlokVlam webprototype",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "vite": "^7.1.0"
+  }
+}
