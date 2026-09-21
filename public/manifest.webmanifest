@@ -1,0 +1,10 @@
+{
+  "name": "KlokVlam",
+  "short_name": "KlokVlam",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#fff8ee",
+  "theme_color": "#ff7a00",
+  "lang": "nl-NL",
+  "description": "KlokVlam helpt kinderen spelenderwijs klokkijken."
+}
